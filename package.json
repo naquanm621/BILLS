@@ -1,27 +1,23 @@
 {
-  "name": "bills",
-  "version": "0.1.0",
-  "private": true,
+  "name": "bills-backend",
+  "version": "1.0.0",
+  "main": "index.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "lucide-react": "^1.8.0",
-    "next": "16.2.4",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.4",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@google-cloud/vision": "^5.3.5",
+    "axios": "^1.15.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "knex": "^3.2.9",
+    "pdf-parse": "^2.4.5",
+    "sqlite3": "^6.0.1",
+    "tesseract.js": "^7.0.0"
   }
 }
