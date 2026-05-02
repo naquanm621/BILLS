@@ -6,6 +6,7 @@ async function processBill(billId, filepath) {
   try {
     console.log(`--- Starting Brain for Bill ID: ${billId} ---`);
     const rawText = await ocrService.extractText(filepath);
+    console.log("📝 OCR TEXT (first 500 chars):", rawText.substring(0, 500));
     const structuredData = await aiService.analyzeText(rawText);
 
     await billsService.updateBillById(billId, {

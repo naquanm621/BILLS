@@ -1,14 +1,14 @@
-// components/ScanVault.tsx
 "use client";
 
-import { Camera, Loader2 } from "lucide-react";
+import { DollarSign, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 
-interface ScanVaultProps {
+interface QuickPayVaultProps {
   onUploadComplete?: () => void;
+  amount?: number;
 }
 
-export default function ScanVault({ onUploadComplete }: ScanVaultProps) {
+export default function QuickPayVault({ onUploadComplete, amount = 0 }: QuickPayVaultProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -42,7 +42,7 @@ export default function ScanVault({ onUploadComplete }: ScanVaultProps) {
   };
 
   return (
-    <div className="relative w-52 h-52 flex items-center justify-center">
+    <div className="relative flex items-center justify-center">
       <input
         type="file"
         ref={fileInputRef}
@@ -51,20 +51,36 @@ export default function ScanVault({ onUploadComplete }: ScanVaultProps) {
         accept="image/*,.pdf"
       />
       
+      {/* Outer glow ring */}
+      <div className="absolute w-64 h-64 rounded-full bg-green-500/20 blur-xl" />
+      
+      {/* Main vault button */}
       <button
         onClick={() => fileInputRef.current?.click()}
         disabled={isUploading}
-        className="relative w-44 h-44 bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 rounded-full flex flex-col items-center justify-center shadow-2xl shadow-green-500/80 border-[10px] border-black active:scale-95 transition-all hover:brightness-110 disabled:opacity-50"
+        className="relative w-56 h-56 bg-gradient-to-br from-green-400 via-emerald-500 to-green-600 rounded-full flex flex-col items-center justify-center shadow-2xl shadow-green-500/60 border-4 border-green-300/30 active:scale-95 transition-all hover:brightness-110 disabled:opacity-50"
       >
         {isUploading ? (
-          <Loader2 size={58} className="text-black animate-spin mb-2" />
+          <Loader2 size={48} className="text-black animate-spin mb-2" />
         ) : (
-          <Camera size={58} className="text-black mb-2" />
+          <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mb-3">
+            <DollarSign size={36} className="text-green-400" />
+          </div>
         )}
-        <p className="font-black text-black text-2xl tracking-widest uppercase">
-          {isUploading ? "Reading..." : "Scan Bill"}
+        
+        {/* Amount display */}
+        {!isUploading && amount > 0 && (
+          <p className="text-4xl font-bold text-black mb-1">${amount}</p>
+        )}
+        
+        {/* Label */}
+        <p className="font-black text-green-900 text-lg tracking-widest uppercase">
+          {isUploading ? "Scanning..." : "Scan Bill"}
         </p>
-        <p className="text-black/70 text-xs mt-1">Tap to upload photo</p>
+        
+        <p className="text-green-800/70 text-xs mt-1 font-medium">
+          Tap to upload
+        </p>
       </button>
     </div>
   );
