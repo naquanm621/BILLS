@@ -1,139 +1,46 @@
-// app/page.tsx
-"use client";
-
-import { useState, useEffect } from "react";
-import VendorBubble from "@/components/VendorBubble";
-import ScanVault from "@/components/ScanVault";
 import BillCard from "@/components/BillCard";
 import BottomNav from "@/components/BottomNav";
-import Keypad from "@/components/Keypad";
+import { bills } from "@/data/bills";
+import { Plus } from "lucide-react";
 
-export interface Bill {
-  id: number;
-  vendor: string | null;
-  amount: number | null;
-  due_date: string | null;
-  status: string;
-}
-
-export default function BiLLSHome() {
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [highlighted, setHighlighted] = useState<number | null>(null);
-  const [payingBill, setPayingBill] = useState<Bill | null>(null);
-  const [payAmount, setPayAmount] = useState("0");
-
-  useEffect(() => {
-    fetchBills();
-  }, []);
-
-  const fetchBills = async () => {
-    try {
-      const res = await fetch("http://localhost:3001/bills");
-      const data = await res.json();
-      if (data.success) {
-        setBills(data.bills);
-      }
-    } catch (err) {
-      console.error("Failed to fetch bills:", err);
-    }
-  };
-
-  const handlePay = async () => {
-    if (!payingBill) return;
-    
-    try {
-      const response = await fetch(`http://localhost:3001/bills/${payingBill.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "paid" }),
-      });
-
-      if (response.ok) {
-        setPayingBill(null);
-        fetchBills(); // Refresh the list
-      } else {
-        alert("Payment failed");
-      }
-    } catch (error) {
-      console.error("Payment error:", error);
-    }
-  };
-
-  // Filter out paid bills and only show the 4 most recent
-  const activeBills = bills.filter(b => b.status !== 'paid').slice(0, 4);
-  const totalDue = bills.filter(b => b.status !== 'paid').reduce((sum, bill) => sum + (bill.amount || 0), 0);
-
-  const openPayment = (bill: Bill) => {
-    setPayingBill(bill);
-    setPayAmount((bill.amount || 0).toString());
-  };
+export default function Home() {
+  const totalDue = bills.reduce((sum, bill) => sum + bill.amount, 0);
 
   return (
-    <div className="min-h-screen bg-black text-white pb-24 relative overflow-hidden">
-      {payingBill && (
-        <Keypad 
-          amount={payAmount} 
-          setAmount={setPayAmount} 
-          onClose={() => setPayingBill(null)} 
-          onPay={handlePay}
-        />
-      )}
-
+    <div className="max-w-md mx-auto bg-black min-h-screen pb-24">
       {/* Header */}
-      <div className="pt-8 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-green-500 rounded-2xl flex items-center justify-center text-black font-bold text-2xl">$</div>
+      <div className="pt-8 pb-6 px-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-green-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl">
+            $
+          </div>
           <h1 className="text-3xl font-bold tracking-tighter">BiLLS</h1>
         </div>
       </div>
 
       {/* Balance */}
-      <div className="px-6 text-center mt-6">
-        <p className="text-zinc-400 text-sm uppercase tracking-widest">TOTAL DUE THIS MONTH</p>
-        <p className="text-7xl font-bold mt-1 tracking-tighter">${totalDue.toFixed(2)}</p>
-        <p className="text-green-400 mt-1">{bills.filter(b => b.status !== 'paid').length} active bills</p>
+      <div className="px-6">
+        <p className="text-zinc-400 text-sm uppercase tracking-widest">Total Balance Due</p>
+        <p className="text-6xl font-bold text-white mt-1">${totalDue.toFixed(2)}</p>
       </div>
 
-      {/* Scan Vault + Floating Vendor Bubbles */}
-      <div className="relative h-[420px] flex items-center justify-center mt-6">
-        <ScanVault onUploadComplete={fetchBills} />
+      {/* Quick Scan Button */}
+      <div className="px-6 mt-8 flex justify-center">
+        <button className="bg-green-500 hover:bg-green-600 w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl shadow-green-500/50 active:scale-95 transition-all">
+          <Plus size={40} className="text-black" />
+        </button>
+      </div>
 
-        {/* Floating Vendor Bubbles */}
-        {activeBills.map((bill, index) => (
-          <div key={bill.id} onClick={() => openPayment(bill)}>
-            <VendorBubble
-              vendor={bill.status === 'processing' ? "Scanning..." : (bill.vendor || "Unknown")}
-              amount={bill.amount || 0}
-              dueDate={bill.due_date || "TBD"}
-              color={index % 2 === 0 ? "bg-red-500" : "bg-blue-500"}
-              isHighlighted={highlighted === bill.id}
-              onMouseEnter={() => setHighlighted(bill.id)}
-              onMouseLeave={() => setHighlighted(null)}
-              index={index}
-            />
-          </div>
+      {/* Upcoming Bills */}
+      <div className="px-6 mt-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Upcoming Bills</h2>
+          <span className="text-green-400 text-sm font-medium">See all →</span>
+        </div>
+
+        {bills.map((bill) => (
+          <BillCard key={bill.id} bill={bill} />
         ))}
-      </div>
-
-      {/* Upcoming Bills List */}
-      <div className="px-6 mt-4">
-        <div className="flex justify-between mb-4">
-          <h2 className="text-2xl font-semibold">Upcoming Bills</h2>
-          <span className="text-green-400 text-sm">See all →</span>
-        </div>
-        <div className="space-y-3">
-          {activeBills.map((bill) => (
-            <div key={bill.id} onClick={() => openPayment(bill)}>
-              <BillCard bill={{
-                id: bill.id,
-                vendor: bill.vendor || "Processing...",
-                amount: bill.amount || 0,
-                dueDate: bill.due_date || "N/A",
-                color: bill.id % 2 === 0 ? "bg-red-500" : "bg-blue-500"
-              }} />
-            </div>
-          ))}
-        </div>
       </div>
 
       <BottomNav />
